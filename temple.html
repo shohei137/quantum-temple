@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>量子仏閣ビューア</title>
+  <style>
+    body {
+      background: #000;
+      margin: 0;
+      overflow: hidden;
+    }
+    #temple {
+      position: relative;
+      height: 100vh;
+    }
+    .tile {
+      width: 50px;
+      height: 25px;
+      background: #c0392b;
+      position: absolute;
+      animation: pulse 13s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.13; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.13); }
+    }
+  </style>
+</head>
+<body>
+  <div id="temple"></div>
+  <div id="info" style="position: fixed; top: 20px; left: 20px; color: white;"></div>
+
+  <script>
+    // 設定情報
+    const config = {
+      sheetId: 'YOUR_SHEET_ID',  // 1LdCKf9NDBaG6loia9Uael-UWfjwWOwsEZLoHA35nS2E
+      pollInterval: 13000 // 13秒ごとに更新
+    };
+
+    // 仏閣生成関数
+    async function generateTemple() {
+      try {
+        const response = await fetch(`https://opensheet.elk.sh/${config.sheetId}/シート1`);
+        const data = await response.json();
+        
+        const temple = document.getElementById('temple');
+        temple.innerHTML = '';
+        
+        // 回答数に応じて瓦を生成
+        data.forEach((row, index) => {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.style.left = `${(index % 13) * 55}px`;
+          tile.style.top = `${Math.floor(index / 13) * 30}px`;
+          tile.style.animationDelay = `${(index % 13) * 0.1}s`;
+          temple.appendChild(tile);
+        });
+
+        // 情報表示
+        document.getElementById('info').innerHTML = `
+          現在の回答数: ${data.length}<br>
+          仏閣レベル: ${Math.floor(data.length / 13)}
+        `;
+      } catch (error) {
+        console.error('データ取得エラー:', error);
+      }
+    }
+
+    // 初回実行 + 定期更新
+    generateTemple();
+    setInterval(generateTemple, config.pollInterval);
+  </script>
+</body>
+</html>
